@@ -1,0 +1,1 @@
+https://accounts.google.com/o/oauth2/v2/auth?response_type=code&redirect_uri=https%3A%2F%2Fadaptive-onboarding-backend.onrender.com%2Fapi%2Fauth%2Fgoogle%2Fcallback&scope=openid%20profile%20email&client_id=389624065290-p47t1gvn1jdalq8endks6j6ndepla0pp.apps.googleusercontent.com
