@@ -83,6 +83,18 @@ export const mockProfiles = [
       { skill: 'TypeScript', reason: 'TypeScript skills need strengthening. Advanced patterns are used extensively in the codebase.', type: 'weak' },
       { skill: 'React', reason: 'Strong React foundation detected. Focus on advanced patterns and performance optimization.', type: 'matched' },
     ],
+    skillGraph: [
+      { id: "JavaScript", dependsOn: [] },
+      { id: "React", dependsOn: ["JavaScript"] },
+      { id: "TypeScript", dependsOn: ["JavaScript"] },
+      { id: "CSS/Tailwind", dependsOn: [] },
+      { id: "Node.js", dependsOn: ["JavaScript"] },
+      { id: "GraphQL", dependsOn: ["Node.js"] },
+      { id: "Testing (Jest)", dependsOn: ["React"] },
+      { id: "Git/Version Control", dependsOn: [] },
+      { id: "Docker", dependsOn: [] },
+      { id: "AWS", dependsOn: ["Docker"] }
+    ]
   },
   {
     id: 'fullstack',
@@ -159,6 +171,18 @@ export const mockProfiles = [
       { skill: 'JavaScript/React', reason: 'Excellent frontend skills! Your strong foundation allows focus on backend technologies.', type: 'matched' },
       { skill: 'CI/CD', reason: 'Strong CI/CD background detected. This will help with deployment automation tasks.', type: 'matched' },
     ],
+    skillGraph: [
+      { id: "JavaScript", dependsOn: [] },
+      { id: "React", dependsOn: ["JavaScript"] },
+      { id: "Node.js", dependsOn: ["JavaScript"] },
+      { id: "PostgreSQL", dependsOn: [] },
+      { id: "MongoDB", dependsOn: [] },
+      { id: "Redis", dependsOn: ["Node.js"] },
+      { id: "Docker", dependsOn: [] },
+      { id: "Kubernetes", dependsOn: ["Docker"] },
+      { id: "CI/CD", dependsOn: ["Git/Version Control"] },
+      { id: "System Design", dependsOn: ["Node.js", "PostgreSQL", "Docker"] }
+    ]
   },
   {
     id: 'datascience',
@@ -246,6 +270,46 @@ export const mockProfiles = [
       { skill: 'Statistics', reason: 'Statistical foundation needs strengthening for rigorous data analysis.', type: 'weak' },
       { skill: 'Data Visualization', reason: 'Good visualization skills will help communicate insights effectively.', type: 'matched' },
     ],
+    skillGraph: [
+      { id: "Python", dependsOn: [] },
+      { id: "SQL", dependsOn: [] },
+      { id: "Statistics", dependsOn: ["Python"] },
+      { id: "Machine Learning", dependsOn: ["Python", "Statistics"] },
+      { id: "TensorFlow/PyTorch", dependsOn: ["Machine Learning"] },
+      { id: "Deep Learning", dependsOn: ["TensorFlow/PyTorch"] },
+      { id: "NLP", dependsOn: ["Deep Learning"] },
+      { id: "Spark/Big Data", dependsOn: ["SQL"] },
+      { id: "MLOps", dependsOn: ["Machine Learning", "Spark/Big Data"] },
+      { id: "Data Visualization", dependsOn: ["Python"] }
+    ]
+  },
+];
+
+export const careerPaths = [
+  {
+    id: 'frontend',
+    name: 'Frontend Developer',
+    requiredSkills: ['JavaScript', 'React', 'TypeScript', 'CSS/Tailwind', 'Git/Version Control', 'Testing (Jest)'],
+  },
+  {
+    id: 'backend',
+    name: 'Backend Developer',
+    requiredSkills: ['Node.js', 'SQL', 'PostgreSQL', 'Docker', 'Redis', 'System Design', 'Git/Version Control'],
+  },
+  {
+    id: 'fullstack',
+    name: 'Full Stack Developer',
+    requiredSkills: ['JavaScript', 'React', 'Node.js', 'PostgreSQL', 'Docker', 'CI/CD', 'System Design'],
+  },
+  {
+    id: 'datascientist',
+    name: 'Data Scientist',
+    requiredSkills: ['Python', 'SQL', 'Machine Learning', 'Statistics', 'Data Visualization', 'Deep Learning'],
+  },
+  {
+    id: 'devops',
+    name: 'DevOps Engineer',
+    requiredSkills: ['Docker', 'Kubernetes', 'CI/CD', 'AWS', 'Linux', 'Terraform', 'Monitoring'],
   },
 ];
 
