@@ -6,6 +6,7 @@ import SkillTable from './components/SkillTable';
 import GapSummary from './components/GapSummary';
 import Roadmap from './components/Roadmap';
 import ReasoningPanel from './components/ReasoningPanel';
+import SignInAnimation from './components/SignInAnimation';
 import { mockProfiles } from './data/mockData';
 
 // Skeleton Loader Component
@@ -51,6 +52,7 @@ export default function App() {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [showResults, setShowResults] = useState(false);
   const [showSkeleton, setShowSkeleton] = useState(false);
+  const [isSigningIn, setIsSigningIn] = useState(false);
 
   const profileOptions = mockProfiles.map((d) => ({ id: d.id, name: d.name }));
 
@@ -67,6 +69,17 @@ export default function App() {
       setShowSkeleton(false);
       setShowResults(true);
     }, 2500);
+  };
+
+  const handleSignIn = () => {
+    setIsSigningIn(true);
+  };
+
+  const handleSignInComplete = () => {
+    setIsSigningIn(false);
+    // Simulate redirect
+    console.log("Redirecting to dashboard...");
+    window.location.href = "#/dashboard"; // Example redirect
   };
 
   // Auto-load first profile for demo
@@ -120,10 +133,21 @@ export default function App() {
                   <Linkedin className="w-5 h-5" />
                 </a>
               </div>
+              
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={handleSignIn}
+                className="px-5 py-2 bg-gradient-to-r from-indigo-600 to-violet-600 text-white rounded-full font-medium shadow-md shadow-indigo-500/20 hover:shadow-indigo-500/40 transition-shadow"
+              >
+                Sign In
+              </motion.button>
             </motion.div>
           </div>
         </div>
       </nav>
+
+      {isSigningIn && <SignInAnimation onComplete={handleSignInComplete} />}
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-6 py-8">
