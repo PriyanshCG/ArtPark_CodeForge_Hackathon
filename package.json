@@ -10,10 +10,12 @@
   },
   "dependencies": {
     "@tailwindcss/postcss": "^4.2.2",
+    "dagre": "^0.8.5",
     "framer-motion": "^11.0.0",
     "lucide-react": "^0.469.0",
     "react": "^19.0.0",
-    "react-dom": "^19.0.0"
+    "react-dom": "^19.0.0",
+    "reactflow": "^11.11.4"
   },
   "devDependencies": {
     "@vitejs/plugin-react": "^4.2.1",
