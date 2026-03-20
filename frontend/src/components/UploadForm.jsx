@@ -67,26 +67,37 @@ export default function UploadForm({
     if (!resumeFile || jdText.trim().length === 0) return;
 
     setIsAnalyzing(true);
-    setStatus('Uploading documents...');
+    setStatus('Parsing resume...');
 
     try {
-      // Step 1: Upload
-      const { sessionId } = await api.uploadDocuments(resumeFile, jdText);
+      // Step 1: Parse Resume
+      const resumeResult = await api.parseResume(resumeFile);
+      const resumeProfile = resumeResult.profile;
 
-      // Step 2: Analyze
-      setStatus('Extracting intelligence...');
-      const analysisData = await api.runAnalysis(sessionId);
+      // Step 2: Parse JD
+      setStatus('Analyzing job description...');
+      const jdResult = await api.parseJD(jdText);
+      const jdProfile = jdResult.profile;
 
-      // Step 3: Generate Pathway
-      setStatus('Generating adaptive roadmap...');
-      const pathwayData = await api.generatePathway(sessionId);
+      // Step 3: Skill Gap Analysis
+      setStatus('Comparing semantics & mapping gaps...');
+      const gapResult = await api.analyzeSkillGap(resumeProfile, jdProfile);
+      const skillGap = gapResult.skillGap;
 
-      // Step 4: Finalize
-      setStatus('Syncing profiles...');
+      // Step 4: Roadmap Generation
+      setStatus('Architecting adaptive roadmap...');
+      const roadmapResult = await api.generateRoadmap(resumeProfile, jdProfile, skillGap);
+      const roadmap = roadmapResult.roadmap;
+
+      // Step 5: Finalize
+      setStatus('Finalizing report...');
       const finalResult = {
-        ...analysisData,
-        ...pathwayData,
-        sessionId
+        resumeProfile,
+        jdProfile,
+        skillGap,
+        pathway: roadmap.pathway,
+        roadmapMetrics: roadmap.metrics,
+        coachingNote: roadmap.overall_coaching_note
       };
 
       onAnalyze(finalResult);
@@ -95,12 +106,68 @@ export default function UploadForm({
     } catch (err) {
       console.error('Analysis failed:', err);
       setStatus('Error: ' + err.message);
-      // reset after 3s
       setTimeout(() => {
         setIsAnalyzing(false);
         setStatus('');
       }, 3000);
     }
+  };
+
+  const handleTryDemo = () => {
+    const demoData = {
+      id: 'demo-fullstack',
+      name: 'Demo Profile (Full Stack)',
+      role: 'Full Stack Developer',
+      company: 'ArtPark Innovation Lab',
+      readinessScore: 72,
+      matchPercentage: 75,
+      missingSkills: 3,
+      weakSkills: 2,
+      skills: [
+        { name: 'React', requiredLevel: 5, yourLevel: 5, category: 'Frontend' },
+        { name: 'Node.js', requiredLevel: 4, yourLevel: 4, category: 'Backend' },
+        { name: 'MongoDB', requiredLevel: 4, yourLevel: 3, category: 'Database' },
+        { name: 'Docker', requiredLevel: 4, yourLevel: 1, category: 'DevOps' },
+        { name: 'GraphQL', requiredLevel: 3, yourLevel: 0, category: 'API' },
+        { name: 'TypeScript', requiredLevel: 5, yourLevel: 2, category: 'Language' },
+      ],
+      roadmap: [
+        {
+          sequence: 1,
+          course_title: 'TypeScript Masterclass',
+          skill_name: 'TypeScript',
+          estimated_hours: 12,
+          priority: 'high',
+          learning_tips: 'Focus on generics and advanced type guards.',
+          reasoning: { why_included: 'JD requires expert level (5/5), but resume shows basic familiarity.' }
+        },
+        {
+          sequence: 2,
+          course_title: 'Docker & Kubernetes Foundations',
+          skill_name: 'Docker',
+          estimated_hours: 15,
+          priority: 'medium',
+          learning_tips: 'Build a multi-stage container for a React app.',
+          reasoning: { why_included: 'Missing core infrastructure skill needed for deployment.' }
+        },
+        {
+          sequence: 3,
+          course_title: 'GraphQL API Design',
+          skill_name: 'GraphQL',
+          estimated_hours: 10,
+          priority: 'low',
+          learning_tips: 'Practice schema-first development with Apollo.',
+          reasoning: { why_included: 'Nice-to-have skill for modernizing the service layer.' }
+        }
+      ],
+      reasoning: [
+        { skill: 'TypeScript', reason: 'High-priority gap. The role requires TypeScript for all components.', type: 'weak' },
+        { skill: 'Docker', reason: 'Critical for local development environments.', type: 'weak' },
+        { skill: 'GraphQL', reason: 'Skill not found on resume. Recommended as a growth area.', type: 'missing' }
+      ],
+      targetJob: 'Full Stack Developer'
+    };
+    onAnalyze(demoData);
   };
 
   const canAnalyze = resumeFile && jdText.trim().length > 0;
@@ -240,28 +307,40 @@ export default function UploadForm({
         )}
 
         {/* Analyze Button */}
-        <motion.button
-          onClick={handleSubmit}
-          disabled={!canAnalyze || isAnalyzing}
-          whileHover={{ scale: canAnalyze && !isAnalyzing ? 1.01 : 1 }}
-          whileTap={{ scale: canAnalyze && !isAnalyzing ? 0.99 : 1 }}
-          className={`w-full py-4 px-6 rounded-xl font-medium text-white transition-all flex items-center justify-center gap-3
-            ${canAnalyze && !isAnalyzing
-              ? 'bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700 shadow-lg shadow-indigo-500/25 cursor-pointer'
-              : 'bg-slate-300 cursor-not-allowed'}`}
-        >
-          {isAnalyzing ? (
-            <>
-              <Loader2 className="w-5 h-5 animate-spin" />
-              <span>Processing...</span>
-            </>
-          ) : (
-            <>
-              <Sparkles className="w-5 h-5" />
-              <span>Analyze Skill Gaps</span>
-            </>
+        <div className="space-y-3">
+          <motion.button
+            onClick={handleSubmit}
+            disabled={!canAnalyze || isAnalyzing}
+            whileHover={{ scale: canAnalyze && !isAnalyzing ? 1.01 : 1 }}
+            whileTap={{ scale: canAnalyze && !isAnalyzing ? 0.99 : 1 }}
+            className={`w-full py-4 px-6 rounded-xl font-medium text-white transition-all flex items-center justify-center gap-3
+              ${canAnalyze && !isAnalyzing
+                ? 'bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700 shadow-lg shadow-indigo-500/25 cursor-pointer'
+                : 'bg-slate-300 cursor-not-allowed'}`}
+          >
+            {isAnalyzing ? (
+              <>
+                <Loader2 className="w-5 h-5 animate-spin" />
+                <span>Processing...</span>
+              </>
+            ) : (
+              <>
+                <Sparkles className="w-5 h-5" />
+                <span>Analyze Skill Gaps</span>
+              </>
+            )}
+          </motion.button>
+
+          {!isAnalyzing && (
+            <button
+              onClick={handleTryDemo}
+              className="w-full py-3 px-6 rounded-xl font-medium text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 border border-slate-200 dark:border-slate-800 transition-all flex items-center justify-center gap-2 text-sm"
+            >
+              <Zap className="w-4 h-4 text-amber-500" />
+              <span>Try Demo Data</span>
+            </button>
           )}
-        </motion.button>
+        </div>
       </div>
     </motion.div>
   );

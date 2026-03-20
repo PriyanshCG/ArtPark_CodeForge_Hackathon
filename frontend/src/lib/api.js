@@ -55,9 +55,61 @@ export const runAnalysis = async (sessionId) => {
 };
 
 export const generatePathway = async (sessionId) => {
-  return apiFetch('/pathway/generate', {
+  return apiFetch('/analysis/roadmap/generate', {
     method: 'POST',
     body: JSON.stringify({ sessionId }),
+  });
+};
+
+export const parseResume = async (resumeFile, text = null) => {
+  if (resumeFile) {
+    const formData = new FormData();
+    formData.append('resume', resumeFile);
+    const response = await fetch(`${API_URL}/analysis/parse/resume`, {
+      method: 'POST',
+      body: formData,
+      credentials: 'include',
+    });
+    const result = await response.json();
+    if (!response.ok) throw new Error(result.message || 'Resume parsing failed');
+    return result.data;
+  }
+  return apiFetch('/analysis/parse/resume', {
+    method: 'POST',
+    body: JSON.stringify({ text }),
+  });
+};
+
+export const parseJD = async (jdText, jdFile = null) => {
+  if (jdFile) {
+    const formData = new FormData();
+    formData.append('jobDescription', jdFile);
+    const response = await fetch(`${API_URL}/analysis/parse/jd`, {
+      method: 'POST',
+      body: formData,
+      credentials: 'include',
+    });
+    const result = await response.json();
+    if (!response.ok) throw new Error(result.message || 'JD parsing failed');
+    return result.data;
+  }
+  return apiFetch('/analysis/parse/jd', {
+    method: 'POST',
+    body: JSON.stringify({ text: jdText }),
+  });
+};
+
+export const analyzeSkillGap = async (resumeProfile, jdProfile) => {
+  return apiFetch('/analysis/analyze/skill-gap', {
+    method: 'POST',
+    body: JSON.stringify({ resumeProfile, jdProfile }),
+  });
+};
+
+export const generateRoadmap = async (resumeProfile, jdProfile, skillGap) => {
+  return apiFetch('/analysis/roadmap/generate', {
+    method: 'POST',
+    body: JSON.stringify({ resumeProfile, jdProfile, skillGap }),
   });
 };
 

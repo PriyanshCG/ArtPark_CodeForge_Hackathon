@@ -119,20 +119,60 @@ export default function App() {
     setIsAnalyzing(false);
     setShowSkeleton(false);
 
+    // If it's demo data, it might already be mapped
+    if (finalResult.id === 'demo-fullstack') {
+      setCurrentData(finalResult);
+      setShowResults(true);
+      return;
+    }
+
+    // Combine matched and missing skills for display
+    const allSkills = [
+      ...(finalResult.skillGap?.matched_skills || []).map(s => ({
+        name: s.skill,
+        requiredLevel: 3, // Default or extracted
+        yourLevel: s.resume_proficiency === 'expert' ? 4 : s.resume_proficiency === 'advanced' ? 3 : s.resume_proficiency === 'intermediate' ? 2 : 1,
+        status: 'matched',
+        category: 'Technical'
+      })),
+      ...(finalResult.skillGap?.missing_skills || []).map(s => ({
+        name: s.skill,
+        requiredLevel: 3,
+        yourLevel: 0,
+        status: 'missing',
+        category: 'Technical'
+      }))
+    ];
+
     // Map backend data to frontend state
     const mappedData = {
-      role: finalResult.jdProfile?.role || finalResult.jdProfile?.title || "Target Role",
-      company: finalResult.jdProfile?.company || "Target Company",
+      role: finalResult.jdProfile?.role_title || "Target Role",
+      company: finalResult.jdProfile?.company_name || "Target Company",
       readinessScore: finalResult.skillGap?.overall_readiness_score || 0,
       matchPercentage: finalResult.skillGap?.overall_readiness_score || 0,
       missingSkills: (finalResult.skillGap?.missing_skills || []).length,
       weakSkills: (finalResult.skillGap?.proficiency_gaps || []).length,
-      skills: finalResult.skillGap?.skills || [],
-      reasoning: finalResult.skillGap?.reasoning || [],
-      roadmap: (finalResult.pathway || []).map(step => ({ ...step, status: 'todo' })),
-      marketTrends: finalResult.skillGap?.market_trends || [],
-      skillGraph: finalResult.skillGap?.skill_graph || [],
-      targetJob: finalResult.jdProfile?.role || finalResult.jdProfile?.title
+      skills: allSkills,
+      reasoning: (finalResult.skillGap?.missing_skills || []).map(s => ({
+        skill: s.skill,
+        reason: `Required for the role but not found in your profile. Priority: ${s.priority}.`,
+        type: 'missing'
+      })).concat((finalResult.skillGap?.proficiency_gaps || []).map(s => ({
+        skill: s.skill,
+        reason: `Proficiency gap detected. Role requires ${s.required_level}, you have ${s.current_level}.`,
+        type: 'weak'
+      }))),
+      roadmap: (finalResult.pathway || []).map(step => ({
+        step: step.sequence,
+        title: step.course_title,
+        description: step.learning_tips,
+        duration: `${step.estimated_hours}h`,
+        priority: step.priority,
+        status: 'todo',
+        reason: step.reasoning?.why_included
+      })),
+      coachingNote: finalResult.coachingNote,
+      targetJob: finalResult.jdProfile?.role_title
     };
 
     setCurrentData(mappedData);

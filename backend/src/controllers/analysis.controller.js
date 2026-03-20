@@ -1,144 +1,144 @@
-/**
- * @file analysis.controller.js
- * @description Runs the full analysis pipeline: parse resume + JD, semantic skill gap analysis
- */
-const Session = require('../models/Session.model');
+const pdf = require('pdf-parse');
 const { parseResume } = require('../services/resumeParser.service');
 const { parseJobDescription } = require('../services/jdParser.service');
 const { analyzeSkillGap } = require('../services/skillMatcher.service');
+const { generateAdaptivePathway } = require('../services/adaptivePathway.service');
 const { sendSuccess, sendError } = require('../utils/responseFormatter');
 const logger = require('../utils/logger');
 
 /**
+ * Helper to extract text from buffer (PDF or Text)
+ */
+const extractText = async (file) => {
+  if (!file) return '';
+  if (file.mimetype === 'application/pdf') {
+    const data = await pdf(file.buffer);
+    return data.text;
+  }
+  return file.buffer.toString('utf-8');
+};
+
+/**
  * POST /api/analysis/run
- * Runs the full analysis pipeline for a session.
- * Body: { sessionId: string }
- *
- * @param {import('express').Request} req
- * @param {import('express').Response} res
- * @param {Function} next
+ * Legacy full analysis pipeline for a session.
  */
 const runFullAnalysis = async (req, res, next) => {
   const { sessionId } = req.body;
-
-  if (!sessionId) {
-    return sendError(res, 'sessionId is required.', 400);
-  }
+  if (!sessionId) return sendError(res, 'sessionId is required.', 400);
 
   let session;
   try {
     session = await Session.findOne({ sessionId });
-    if (!session) {
-      return sendError(res, `Session not found: ${sessionId}`, 404);
-    }
-
-    if (session.status === 'processing') {
-      return sendError(res, 'Analysis is already in progress for this session.', 409);
-    }
-
+    if (!session) return sendError(res, `Session not found: ${sessionId}`, 404);
+    if (session.status === 'processing') return sendError(res, 'Analysis in progress.', 409);
     if (session.status === 'completed' && session.skillGap) {
-      return sendSuccess(res, {
-        sessionId,
-        status: 'completed',
-        resumeProfile: session.resumeProfile,
-        jdProfile: session.jdProfile,
-        skillGap: session.skillGap,
-      }, 'Analysis already completed (cached)');
+      return sendSuccess(res, { sessionId, status: 'completed', skillGap: session.skillGap }, 'Cached');
     }
-  } catch (err) {
-    logger.error('Analysis session lookup error:', err);
-    return next(err);
-  }
+  } catch (err) { return next(err); }
 
-  // Mark as processing
   session.status = 'processing';
   await session.save();
 
   try {
     const resumeText = session.resumeProfile?._rawText;
     const jdText = session.jdProfile?._rawText || session.jdText;
-
-    if (!resumeText) {
-      throw new Error('Resume text not found in session. Please re-upload your files.');
-    }
-    if (!jdText) {
-      throw new Error('Job description text not found in session. Please re-upload your files.');
-    }
-
-    // Step 1: Parse resume
-    logger.info(`[${sessionId}] Step 1: Parsing resume...`);
     const resumeProfile = await parseResume(resumeText);
-
-    // Step 2: Parse job description
-    logger.info(`[${sessionId}] Step 2: Parsing job description...`);
     const jdProfile = await parseJobDescription(jdText);
-
-    // Step 3: Semantic skill gap analysis
-    logger.info(`[${sessionId}] Step 3: Analyzing skill gap...`);
     const skillGap = await analyzeSkillGap(resumeProfile, jdProfile);
+    const roadmap = await generateAdaptivePathway(resumeProfile, jdProfile, skillGap);
 
-    // Save results
     session.resumeProfile = resumeProfile;
     session.jdProfile = jdProfile;
     session.skillGap = skillGap;
+    session.pathway = roadmap;
     session.status = 'completed';
-    session.completedAt = new Date();
     await session.save();
 
-    logger.info(`[${sessionId}] ✅ Analysis complete. Readiness: ${skillGap.overall_readiness_score}%`);
-
-    return sendSuccess(res, {
-      sessionId,
-      status: 'completed',
-      resumeProfile,
-      jdProfile,
-      skillGap,
-    }, 'Analysis completed successfully');
+    return sendSuccess(res, { sessionId, status: 'completed', skillGap, roadmap }, 'Success');
   } catch (err) {
-    logger.error(`[${sessionId}] Analysis failed:`, err.message);
     session.status = 'failed';
     session.errorMessage = err.message;
     await session.save();
-    return sendError(res, `Analysis failed: ${err.message}`, 500, err);
+    return sendError(res, err.message, 500);
   }
 };
 
 /**
- * GET /api/analysis/:sessionId
- * Poll the analysis status and retrieve results.
- *
- * @param {import('express').Request} req
- * @param {import('express').Response} res
- * @param {Function} next
+ * POST /api/analysis/parse/resume
  */
+const parseResumeHandler = async (req, res) => {
+  try {
+    let text = req.body.text;
+    if (req.files?.resume) {
+      text = await extractText(req.files.resume[0]);
+    }
+    if (!text) return sendError(res, 'No resume content provided.', 400);
+    const profile = await parseResume(text);
+    return sendSuccess(res, { profile, _rawText: text }, 'Resume parsed');
+  } catch (err) {
+    return sendError(res, err.message, 500);
+  }
+};
+
+/**
+ * POST /api/analysis/parse/jd
+ */
+const parseJDHandler = async (req, res) => {
+  try {
+    let text = req.body.text;
+    if (req.files?.jobDescription) {
+      text = await extractText(req.files.jobDescription[0]);
+    }
+    if (!text) return sendError(res, 'No JD content provided.', 400);
+    const profile = await parseJobDescription(text);
+    return sendSuccess(res, { profile, _rawText: text }, 'JD parsed');
+  } catch (err) {
+    return sendError(res, err.message, 500);
+  }
+};
+
+/**
+ * POST /api/analysis/analyze/skill-gap
+ */
+const analyzeSkillGapHandler = async (req, res) => {
+  try {
+    const { resumeProfile, jdProfile } = req.body;
+    if (!resumeProfile || !jdProfile) return sendError(res, 'Both profiles required.', 400);
+    const skillGap = await analyzeSkillGap(resumeProfile, jdProfile);
+    return sendSuccess(res, { skillGap }, 'Gap analysis complete');
+  } catch (err) {
+    return sendError(res, err.message, 500);
+  }
+};
+
+/**
+ * POST /api/analysis/roadmap/generate
+ */
+const generateRoadmapHandler = async (req, res) => {
+  try {
+    const { resumeProfile, jdProfile, skillGap } = req.body;
+    if (!resumeProfile || !jdProfile || !skillGap) return sendError(res, 'All inputs required.', 400);
+    const roadmap = await generateAdaptivePathway(resumeProfile, jdProfile, skillGap);
+    return sendSuccess(res, { roadmap }, 'Roadmap generated');
+  } catch (err) {
+    return sendError(res, err.message, 500);
+  }
+};
+
 const getAnalysisStatus = async (req, res, next) => {
   try {
     const { sessionId } = req.params;
     const session = await Session.findOne({ sessionId });
-
-    if (!session) {
-      return sendError(res, `Session not found: ${sessionId}`, 404);
-    }
-
-    const payload = {
-      sessionId,
-      status: session.status,
-      errorMessage: session.errorMessage || null,
-      createdAt: session.createdAt,
-      completedAt: session.completedAt,
-    };
-
-    if (session.status === 'completed') {
-      payload.resumeProfile = session.resumeProfile;
-      payload.jdProfile = session.jdProfile;
-      payload.skillGap = session.skillGap;
-    }
-
-    return sendSuccess(res, payload, `Analysis status: ${session.status}`);
-  } catch (err) {
-    logger.error('Get analysis status error:', err);
-    next(err);
-  }
+    if (!session) return sendError(res, `Session not found`, 404);
+    return sendSuccess(res, { status: session.status, ...session.toObject() }, 'Status');
+  } catch (err) { next(err); }
 };
 
-module.exports = { runFullAnalysis, getAnalysisStatus };
+module.exports = { 
+  runFullAnalysis, 
+  getAnalysisStatus,
+  parseResumeHandler,
+  parseJDHandler,
+  analyzeSkillGapHandler,
+  generateRoadmapHandler
+};
