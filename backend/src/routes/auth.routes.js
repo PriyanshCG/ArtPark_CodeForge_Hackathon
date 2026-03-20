@@ -13,8 +13,8 @@ const router = express.Router();
 router.get(
   '/google',
   passport.authenticate('google', { 
-    scope: ['profile', 'email', 'openid'],
-    prompt: 'select_account' 
+    scope: ['openid', 'profile', 'email'],
+    session: false
   })
 );
 
@@ -30,6 +30,10 @@ router.get(
   }),
   (req, res) => {
     try {
+      if (!req.user) {
+        return res.redirect(`${process.env.FRONTEND_URL || 'http://localhost:5173'}/login?auth=failed`);
+      }
+
       // Create JWT
       const token = jwt.sign(
         { id: req.user._id, role: req.user.role },
@@ -40,18 +44,19 @@ router.get(
       // Set cookie (helpful for some flows)
       res.cookie('jwt', token, {
         httpOnly: true,
-        secure: true, // Always secure in production/Render
-        sameSite: 'none', // Needed for cross-site cookies between Render and Vercel
+        secure: true, // Recommended for production
+        sameSite: 'none', // Required for cross-site cookies
         maxAge: 7 * 24 * 60 * 60 * 1000,
       });
 
       // Redirect to frontend with token
       const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
-      const redirectUrl = `${frontendUrl}/?auth=success&token=${token}`;
+      const redirectUrl = `${frontendUrl.replace(/\/$/, '')}/?auth=success&token=${token}`;
       res.redirect(redirectUrl);
     } catch (err) {
+      console.error('Auth callback error:', err);
       const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
-      res.redirect(`${frontendUrl}/?auth=failed`);
+      res.redirect(`${frontendUrl.replace(/\/$/, '')}/login?auth=failed`);
     }
   }
 );
