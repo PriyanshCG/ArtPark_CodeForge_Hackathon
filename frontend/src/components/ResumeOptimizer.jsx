@@ -1,12 +1,14 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { FileText, Sparkles, CheckCircle, TrendingUp, AlertTriangle, ExternalLink } from 'lucide-react';
+import { FileText, Sparkles, TrendingUp, AlertTriangle, ExternalLink, Loader2 } from 'lucide-react';
+import { PDFDownloadLink } from '@react-pdf/renderer';
+import ResumePDF from './ResumePDF';
 
 export default function ResumeOptimizer({ missingSkills, role }) {
     const suggestions = [
         {
             title: "Add Targeted Project Work",
-            desc: `Specifically mention ${missingSkills[0]?.name || 'relevant frameworks'} projects. Describe your role in building scalable systems.`,
+            desc: `Specifically mention ${missingSkills?.[0]?.name || 'relevant frameworks'} projects. Describe your role in building scalable systems.`,
             priority: 'high'
         },
         {
@@ -16,10 +18,19 @@ export default function ResumeOptimizer({ missingSkills, role }) {
         },
         {
             title: "Keyword Optimization",
-            desc: `Include ${missingSkills[1]?.name || 'industry standard'} as a core skill to pass ATS (Applicant Tracking System) filters.`,
+            desc: `Include ${missingSkills?.[1]?.name || 'industry standard'} as a core skill to pass ATS (Applicant Tracking System) filters.`,
             priority: 'high'
         }
     ];
+
+    const safeMissingSkills = Array.isArray(missingSkills) ? missingSkills : [{ name: 'Cloud Architecture' }, { name: 'CI/CD Pipelines' }];
+    const missingSignals = safeMissingSkills.slice(0, 4).map(s => s.name || s);
+
+    const pdfData = {
+        name: "Alex M. Chen",
+        title: role || "Target Role",
+        summary: `Results-oriented software engineer with strong experience in scalable systems. Intentionally upskilling in high-impact areas like ${missingSignals.join(', ')} to stay ahead of market trends and deliver enterprise-grade software. Passionate about clean code, robust pipelines, and driving product innovation.`,
+    };
 
     return (
         <div className="bg-white dark:bg-slate-900 rounded-[2.5rem] shadow-sm border border-slate-200/60 dark:border-slate-800/60 p-10 overflow-hidden relative">
@@ -35,16 +46,30 @@ export default function ResumeOptimizer({ missingSkills, role }) {
                         </div>
                         <div>
                             <h3 className="text-2xl font-black text-slate-800 dark:text-white uppercase tracking-tight">Resume Optimization AI</h3>
-                            <p className="text-xs text-slate-500 dark:text-slate-400">Personalized feedback for {role}</p>
+                            <p className="text-xs text-slate-500 dark:text-slate-400">Personalized feedback for {role || 'your profile'}</p>
                         </div>
                     </div>
                     <p className="text-slate-600 dark:text-slate-400 font-medium leading-relaxed mb-8">
                         Our AI analyzed your profile against industry standards. These high-impact adjustments will increase your visibility to top-tier recruiters by <span className="text-emerald-500 font-black">45%</span>.
                     </p>
-                    <button className="px-8 py-4 bg-slate-900 dark:bg-amber-600 text-white rounded-2xl font-black shadow-lg shadow-amber-500/10 hover:-translate-y-1 transition-all flex items-center gap-3">
-                        Generate PDF Resume
-                        <ExternalLink className="w-4 h-4" />
-                    </button>
+
+                    <PDFDownloadLink
+                        document={<ResumePDF data={pdfData} />}
+                        fileName={`Resume_${(role || 'Developer').replace(/\s+/g, '_')}.pdf`}
+                        className="px-8 py-4 bg-slate-900 dark:bg-amber-600 hover:-translate-y-1 shadow-lg shadow-amber-500/10 text-white rounded-2xl font-black transition-all flex items-center justify-center gap-3 w-fit no-underline"
+                    >
+                        {({ loading }) => loading ? (
+                            <>
+                                <Loader2 className="w-5 h-5 animate-spin" />
+                                Generating...
+                            </>
+                        ) : (
+                            <>
+                                Generate PDF Resume
+                                <ExternalLink className="w-4 h-4" />
+                            </>
+                        )}
+                    </PDFDownloadLink>
                 </div>
 
                 <div className="flex-1 w-full space-y-4">

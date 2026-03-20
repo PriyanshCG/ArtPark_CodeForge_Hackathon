@@ -73,7 +73,7 @@ const extractJSON = (text) => {
 /**
  * Helper to call a specific provider.
  */
-const callProvider = async (provider, systemPrompt, userPrompt, isStructured = false) => {
+const callProvider = async (provider, systemPrompt, userPrompt, isStructured = false, customOptions = {}) => {
   logger.info(`Calling LLM provider: ${provider} (${isStructured ? 'Structured' : 'Text'})`);
 
   if (provider === 'groq') {
@@ -84,6 +84,7 @@ const callProvider = async (provider, systemPrompt, userPrompt, isStructured = f
         { role: 'user', content: userPrompt },
       ],
       temperature: 0.2,
+      ...customOptions
     };
     if (isStructured) options.response_format = { type: 'json_object' };
     const completion = await groq.chat.completions.create(options);
@@ -91,7 +92,11 @@ const callProvider = async (provider, systemPrompt, userPrompt, isStructured = f
   }
 
   if (provider === 'gemini') {
-    const model = genAI.getGenerativeModel({ model: MODELS.gemini });
+    const modelOptions = { model: MODELS.gemini };
+    if (customOptions.max_tokens) {
+      modelOptions.generationConfig = { maxOutputTokens: customOptions.max_tokens };
+    }
+    const model = genAI.getGenerativeModel(modelOptions);
     const fullPrompt = `System: ${systemPrompt}\n\nUser: ${userPrompt}${isStructured ? '\n\nIMPORTANT: Return ONLY valid JSON.' : ''}`;
     const result = await model.generateContent(fullPrompt);
     return result.response.text();
@@ -105,6 +110,7 @@ const callProvider = async (provider, systemPrompt, userPrompt, isStructured = f
         { role: 'user', content: userPrompt },
       ],
       temperature: 0.2,
+      ...customOptions
     };
     if (isStructured) options.response_format = { type: 'json_object' };
     const completion = await openai.chat.completions.create(options);
@@ -118,13 +124,13 @@ const callProvider = async (provider, systemPrompt, userPrompt, isStructured = f
  * Call the LLM with fallback logic.
  * @returns {Promise<string>}
  */
-const callLLMText = async (systemPrompt, userPrompt) => {
+const callLLMText = async (systemPrompt, userPrompt, options = {}) => {
   const providers = [LLM_PROVIDER, 'gemini', 'openai'].filter((p, i, a) => a.indexOf(p) === i);
 
   for (const provider of providers) {
     for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
       try {
-        const response = await callProvider(provider, systemPrompt, userPrompt, false);
+        const response = await callProvider(provider, systemPrompt, userPrompt, false, options);
         return response;
       } catch (err) {
         logger.warn(`${provider} attempt ${attempt} failed: ${err.message}`);

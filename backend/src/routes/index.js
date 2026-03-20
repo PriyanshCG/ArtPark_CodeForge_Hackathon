@@ -10,6 +10,7 @@ const analysisRouter = require('./analysis.routes');
 const pathwayRouter = require('./pathway.routes');
 const authRouter = require('./auth.routes');
 const chatRouter = require('./chat.routes');
+const interviewRouter = require('./interview.routes');
 
 const router = express.Router();
 
@@ -18,6 +19,7 @@ router.use('/analysis', analysisRouter);
 router.use('/pathway', pathwayRouter);
 router.use('/auth', authRouter);
 router.use('/chat', chatRouter);
+router.use('/interview', interviewRouter);
 
 /** GET /api/courses */
 router.get('/courses', getAllCourses);

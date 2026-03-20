@@ -1,136 +1,89 @@
-# AI-Adaptive Onboarding Engine — Backend API
+# ArtPark CodeForge / AI-Adaptive Onboarding Engine — Backend
 
-A backend service that uses AI to generate personalized, dependency-ordered learning pathways for new hires based on their resume and a job description.
+A high-performance backend service that leverages LLMs and Semantic Analysis to generate personalized, dependency-ordered learning pathways for new hires.
 
-## Quick Start
+## ✨ Hackathon Features
+
+1. **Intelligent Parsing**: Extracts skills, experience, and seniority from Resume and Job Descriptions (PDF/Text) using GPT-4o.
+2. **Dynamic Mapping**: Semantic skill gap analysis using embeddings and cosine similarity to identify matched, missing, and weak skills.
+3. **Adaptive Roadmap**: 5-phase algorithm that generates a time-boxed learning journey with dependency-aware ordering.
+4. **Reasoning Trace**: Explainable AI traces for every recommendation, documenting *why* a course was included and *why* it's in that specific order.
+
+## 🚀 Quick Start
 
 ### Prerequisites
 - Node.js >= 20
 - MongoDB (local or Atlas)
-- OpenAI API Key
+- LLM API Key (Groq/Gemini/OpenAI)
 
 ### Setup
-
 ```bash
 cd backend
 npm install
+cp .env.example .env
+# Edit .env and set your API keys
 ```
 
-Copy `.env` and fill in your values:
-```bash
-# Edit .env and set your OPENAI_API_KEY and MONGODB_URI
-```
-
-### Run (Development)
+### Run
 ```bash
 npm run dev
 ```
 
-### Run (Production)
-```bash
-npm start
-```
-
 ---
 
-## API Endpoints
+## 🛠 API Endpoints (Hackathon Ready)
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| GET | `/api/health` | Health check |
-| POST | `/api/upload` | Upload resume + JD (FormData) |
-| POST | `/api/analysis/run` | Run full analysis pipeline |
-| GET | `/api/analysis/:sessionId` | Poll analysis status |
-| POST | `/api/pathway/generate` | Generate adaptive pathway |
-| GET | `/api/pathway/:sessionId` | Get stored pathway |
-| GET | `/api/courses` | List all 38 courses |
-| GET | `/api/courses/:domain` | Filter by domain |
+| **POST** | `/api/analysis/parse/resume` | Parse Resume (PDF/Text) → Structured JSON |
+| **POST** | `/api/analysis/parse/jd` | Parse JD (PDF/Text) → Structured JSON |
+| **POST** | `/api/analysis/analyze/skill-gap` | Compare Resume vs JD → Skill Gap Data |
+| **POST** | `/api/analysis/roadmap/generate` | Generate 3-Stage Adaptive Roadmap |
+| **POST** | `/api/analysis/run` | Full async analysis pipeline (Legacy support) |
 
 ---
 
-## How It Works
+## 🧠 How It Works
 
-### 5-Phase Adaptive Pathway Algorithm
+### Intelligent Skill Extraction
+We use LLMs to extract not just keywords, but the *context* of experience. We distinguish between "heard of" and "expert-level" proficiency.
 
-1. **Phase 1 — Dependency Graph**: Build directed acyclic graph of skills from `courseDatabase.json`
-2. **Phase 2 — Topological Sort (Kahn's Algorithm)**: Order skills so prerequisites always come first
-3. **Phase 3 — Learner Adaptation**: Skip known skills, adjust proficiency start level based on resume
-4. **Phase 4 — LLM Enrichment**: GPT-4o adds learning tips, success criteria, and weekly schedule
-5. **Phase 5 — Reasoning Trace**: Every step gets `why_included`, `why_this_order`, `dependency_chain`, `adaptation_note`
+### Semantic Matching Engine
+Uses `text-embedding-3-small` or Gemini embeddings + target similarity threshold (0.75) + a custom **Taxonomy Synonyms Map** to ensure "React.js" matches "React" and "Neural Networks" matches "Deep Learning" with high confidence.
 
-### Semantic Skill Matching
-Uses OpenAI `text-embedding-3-small` + cosine similarity (threshold: 0.75) to identify synonymous skills across resume and JD (e.g., "PostgreSQL" ≈ "SQL", "Neural Networks" ≈ "Deep Learning").
-
-### Grounding Validation
-After every pathway generation, all course IDs are verified against `courseDatabase.json`. Returns a `grounding_score` (aim: 100%).
+### 5-Phase Adaptive Algorithm
+1. **Dependency Analysis**: Builds a graph from our internal 50+ course catalog.
+2. **Topological Ordering**: Using Kahn's Algorithm to ensure foundations come before advanced topics.
+3. **Learner Personalization**: Skips what you know; adapts course difficulty to your seniority.
+4. **LLM Enrichment**: Adds personalized tips, success criteria, and a weekly schedule.
+5. **Reasoning Trace**: Injects JSON metadata explaining the logic behind every recommendation.
 
 ---
 
-## Project Structure
+## 📂 Project Structure
 
 ```
 backend/
 ├── src/
-│   ├── server.js            ← Express entry point
-│   ├── config/
-│   │   ├── db.js            ← MongoDB connection (retry + fallback)
-│   │   ├── openai.js        ← OpenAI singleton client
-│   │   └── courseDatabase.json  ← 38-course catalog
+│   ├── config/              ← Database & Course Catalog (50+ courses)
 │   ├── services/
-│   │   ├── llm.service.js          ← callLLM, callLLMStructured, getEmbedding
-│   │   ├── resumeParser.service.js ← Parse resume PDF → structured profile
-│   │   ├── jdParser.service.js     ← Parse JD text → structured requirements
-│   │   ├── skillMatcher.service.js ← Semantic gap analysis (embeddings)
-│   │   ├── adaptivePathway.service.js ← 5-phase pathway algorithm
-│   │   └── reasoningTrace.service.js  ← Grounding validation
-│   ├── controllers/
-│   │   ├── upload.controller.js
-│   │   ├── analysis.controller.js
-│   │   └── pathway.controller.js
-│   ├── routes/
-│   ├── models/
-│   ├── middleware/
-│   └── utils/
-├── uploads/
-├── .env
-└── package.json
+│   │   ├── resumeParser.js  ← Intelligent Resume Extraction
+│   │   ├── jdParser.js      ← Intelligent JD Analysis
+│   │   ├── skillMatcher.js  ← Semantic Gap Engine
+│   │   └── adaptivePathway.js ← Core 5-Phase Algorithm
+│   ├── controllers/         ← Granular Hackathon Handlers
+│   ├── utils/
+│   │   └── taxonomy.js      ← Deterministic Synonyms Map
+│   └── server.js            ← Entry Point
 ```
 
 ---
 
-## Environment Variables
-
-```env
-PORT=5000
-NODE_ENV=development
-MONGODB_URI=mongodb://127.0.0.1:27017/adaptive-onboarding
-OPENAI_API_KEY=sk-proj-...
-LLM_MODEL=gpt-4o
-EMBEDDING_MODEL=text-embedding-3-small
-FRONTEND_URL=http://localhost:5173
-MAX_FILE_SIZE=10485760
-UPLOAD_DIR=uploads
-```
-
----
-
-## Sample API Flow
+## 🧪 Testing with cURL
 
 ```bash
-# 1. Upload files
-curl -X POST http://localhost:5000/api/upload \
-  -F "resume=@resume.pdf" \
-  -F "jobDescriptionText=We need a Senior Full Stack Engineer with React, Node.js, TypeScript, Docker..."
-
-# Response: { "sessionId": "uuid-here", ... }
-
-# 2. Run analysis
-curl -X POST http://localhost:5000/api/analysis/run \
+# Parse a resume text
+curl -X POST http://localhost:5000/api/analysis/parse/resume \
   -H "Content-Type: application/json" \
-  -d '{"sessionId": "uuid-here"}'
-
-# 3. Generate pathway
-curl -X POST http://localhost:5000/api/pathway/generate \
-  -H "Content-Type: application/json" \
-  -d '{"sessionId": "uuid-here"}'
+  -d '{"text": "John Doe, Senior React Developer with 5 years of Node.js experience..."}'
 ```

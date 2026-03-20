@@ -8,7 +8,6 @@ export const mockProfiles = [
     matchPercentage: 72,
     missingSkills: 2,
     weakSkills: 3,
-    userResume: "Senior Frontend Developer with 5+ years of experience. Expert in JavaScript and React. Skilled in Deep Learning and building AI-powered interfaces. Extensive experience with Tailwind CSS and TypeScript.",
     skills: [
       { name: 'JavaScript', requiredLevel: 5, yourLevel: 4, category: 'Core' },
       { name: 'React', requiredLevel: 5, yourLevel: 4, category: 'Framework' },
@@ -16,107 +15,85 @@ export const mockProfiles = [
       { name: 'CSS/Tailwind', requiredLevel: 4, yourLevel: 5, category: 'Styling' },
       { name: 'Node.js', requiredLevel: 3, yourLevel: 2, category: 'Backend' },
       { name: 'GraphQL', requiredLevel: 4, yourLevel: 1, category: 'API' },
-      { name: 'Neural Networks', requiredLevel: 4, yourLevel: 0, category: 'AI/ML' },
       { name: 'Testing (Jest)', requiredLevel: 4, yourLevel: 3, category: 'Quality' },
       { name: 'Git/Version Control', requiredLevel: 4, yourLevel: 5, category: 'Tools' },
       { name: 'Docker', requiredLevel: 3, yourLevel: 0, category: 'DevOps' },
       { name: 'AWS', requiredLevel: 3, yourLevel: 0, category: 'Cloud' },
     ],
-    marketTrends: {
-      demand: "High",
-      growth: "+24% Year-over-Year",
-      insight: "React and Next.js demand is skyrocketing in enterprise applications."
-    },
     roadmap: [
-      { step: 1, title: 'Master Docker', description: 'Essential for modern deployment.', resource: 'Docker Docs', duration: '2 weeks', priority: 'high', type: 'technical', style: 'Hands-on' },
-      { step: 2, title: 'GraphQL Deep Dive', description: 'Schema design and Apollo Client.', resource: 'Apollo Tutorial', duration: '3 weeks', priority: 'high', type: 'technical', style: 'Video' },
-      { step: 3, title: 'AWS Cloud', description: 'EC2, S3, and Lambda architecture.', resource: 'AWS Portal', duration: '3 weeks', priority: 'high', type: 'technical', style: 'Interactive' },
+      {
+        step: 1,
+        title: 'Master Docker Fundamentals',
+        description: 'Learn containerization basics, Dockerfile creation, and container orchestration. Essential for modern deployment workflows.',
+        resource: 'Docker Official Docs',
+        resourceUrl: '#',
+        duration: '2 weeks',
+        priority: 'high',
+      },
+      {
+        step: 2,
+        title: 'Deep Dive into GraphQL',
+        description: 'Understand GraphQL schema design, queries, mutations, and integration with React using Apollo Client.',
+        resource: 'Apollo GraphQL Tutorial',
+        resourceUrl: '#',
+        duration: '3 weeks',
+        priority: 'high',
+      },
+      {
+        step: 3,
+        title: 'Strengthen TypeScript Skills',
+        description: 'Advanced type patterns, generics, and type-safe React components. Focus on real-world enterprise patterns.',
+        resource: 'TypeScript Deep Dive',
+        resourceUrl: '#',
+        duration: '2 weeks',
+        priority: 'medium',
+      },
+      {
+        step: 4,
+        title: 'AWS Cloud Essentials',
+        description: 'Learn AWS core services: EC2, S3, Lambda, and CloudFront. Understand serverless architecture patterns.',
+        resource: 'AWS Training Portal',
+        resourceUrl: '#',
+        duration: '3 weeks',
+        priority: 'high',
+      },
+      {
+        step: 5,
+        title: 'Advanced Testing Strategies',
+        description: 'Implement comprehensive testing with Jest, React Testing Library, and E2E testing with Cypress.',
+        resource: 'Testing JavaScript Course',
+        resourceUrl: '#',
+        duration: '2 weeks',
+        priority: 'medium',
+      },
+      {
+        step: 6,
+        title: 'Node.js Backend Integration',
+        description: 'Build RESTful APIs and understand full-stack development patterns for better frontend-backend collaboration.',
+        resource: 'Node.js Best Practices',
+        resourceUrl: '#',
+        duration: '2 weeks',
+        priority: 'low',
+      },
     ],
     reasoning: [
-      { skill: 'Docker', reason: 'Missing from resume but required for CI/CD.', type: 'missing' },
-      { skill: 'AWS', reason: 'Industry standard for cloud-native roles.', type: 'missing' },
+      { skill: 'Docker', reason: 'Docker is required for this role but not found in your resume. Container knowledge is essential for CI/CD pipelines.', type: 'missing' },
+      { skill: 'AWS', reason: 'Cloud deployment experience is a key requirement. No AWS experience detected in your background.', type: 'missing' },
+      { skill: 'GraphQL', reason: 'Your GraphQL level (1/4) is significantly below the required proficiency (4/4). This is a core skill for the role.', type: 'weak' },
+      { skill: 'TypeScript', reason: 'TypeScript skills need strengthening. Advanced patterns are used extensively in the codebase.', type: 'weak' },
+      { skill: 'React', reason: 'Strong React foundation detected. Focus on advanced patterns and performance optimization.', type: 'matched' },
     ],
     skillGraph: [
       { id: "JavaScript", dependsOn: [] },
       { id: "React", dependsOn: ["JavaScript"] },
       { id: "TypeScript", dependsOn: ["JavaScript"] },
+      { id: "CSS/Tailwind", dependsOn: [] },
       { id: "Node.js", dependsOn: ["JavaScript"] },
       { id: "GraphQL", dependsOn: ["Node.js"] },
-      { id: "AWS", dependsOn: [] }
-    ]
-  },
-  {
-    id: 'marketing',
-    name: 'Growth Marketer',
-    role: 'Head of Growth',
-    company: 'SkyRocket Ads',
-    readinessScore: 54,
-    matchPercentage: 62,
-    missingSkills: 3,
-    weakSkills: 2,
-    userResume: "Growth Marketer with 4 years experience in SEO and Content. Skilled in Google Analytics and basic SQL. Looking to transition into data-driven performance marketing.",
-    skills: [
-      { name: 'SEO Strategy', requiredLevel: 5, yourLevel: 4, category: 'Organic' },
-      { name: 'PPC / Meta Ads', requiredLevel: 5, yourLevel: 2, category: 'Performance' },
-      { name: 'Google Analytics 4', requiredLevel: 4, yourLevel: 5, category: 'Data' },
-      { name: 'Tableau / Data Viz', requiredLevel: 4, yourLevel: 1, category: 'Data' },
-      { name: 'Copywriting', requiredLevel: 5, yourLevel: 4, category: 'Creative' },
-      { name: 'Python for Mkting', requiredLevel: 3, yourLevel: 0, category: 'Automation' },
-    ],
-    marketTrends: {
-      demand: "Very High",
-      growth: "+31% Year-over-Year",
-      insight: "Data-driven marketing and Python automation are the top skills for 2024."
-    },
-    roadmap: [
-      { step: 1, title: 'Python for Performance', description: 'Automate ad spend reporting.', resource: 'Python for Marketers', duration: '4 weeks', priority: 'high', style: 'Hands-on' },
-      { step: 2, title: 'Advanced Tableau', description: 'Build high-impact marketing dashboards.', resource: 'Tableau Desktop', duration: '2 weeks', priority: 'medium', style: 'Visual' },
-      { step: 3, title: 'PPC Mastery', description: 'Focus on Meta Pixel and conversion API.', resource: 'Meta Blueprint', duration: '3 weeks', priority: 'high', style: 'Interactive' },
-    ],
-    reasoning: [
-      { skill: 'Python', reason: 'Market trend shows 85% of high-paying roles now require Python automation.', type: 'missing' },
-      { skill: 'PPC', reason: 'Core performance skill missing from your recent resume projects.', type: 'weak' },
-    ],
-    skillGraph: [
-      { id: "SEO Strategy", dependsOn: [] },
-      { id: "Google Analytics 4", dependsOn: ["SEO Strategy"] },
-      { id: "Python for Mkting", dependsOn: ["Google Analytics 4"] },
-      { id: "Tableau / Data Viz", dependsOn: ["Google Analytics 4"] }
-    ]
-  },
-  {
-    id: 'hr',
-    name: 'HR Analyst',
-    role: 'People Analytics Lead',
-    company: 'InterScale Global',
-    readinessScore: 78,
-    matchPercentage: 81,
-    missingSkills: 1,
-    weakSkills: 2,
-    userResume: "HR Specialist with strong background in recruitment and employee relations. Expert in Workday and performance management. Transitioning into People Analytics role.",
-    skills: [
-      { name: 'Recruitment Ops', requiredLevel: 5, yourLevel: 5, category: 'Core' },
-      { name: 'Employee Relations', requiredLevel: 5, yourLevel: 4, category: 'Core' },
-      { name: 'Workday / HRIS', requiredLevel: 4, yourLevel: 5, category: 'Tools' },
-      { name: 'Predictive Modeling', requiredLevel: 4, yourLevel: 1, category: 'Data' },
-      { name: 'Policy Drafting', requiredLevel: 4, yourLevel: 4, category: 'Admin' },
-    ],
-    marketTrends: {
-      demand: "Moderate",
-      growth: "+12% Year-over-Year",
-      insight: "Retention modeling using AI is becoming a critical requirement for HR leads."
-    },
-    roadmap: [
-      { step: 1, title: 'Intro to People Data', description: 'Learn logic behind retention metrics.', resource: 'Coursera HR Data', duration: '2 weeks', priority: 'high', style: 'Reading' },
-      { step: 2, title: 'Predictive Modeling', description: 'Apply simple statistics to employee data.', resource: 'Stat Academy', duration: '4 weeks', priority: 'high', style: 'Hands-on' },
-    ],
-    reasoning: [
-      { skill: 'Predictive Modeling', reason: 'Role requires data-driven recruitment forecasting.', type: 'weak' },
-    ],
-    skillGraph: [
-      { id: "Recruitment Ops", dependsOn: [] },
-      { id: "Workday / HRIS", dependsOn: ["Recruitment Ops"] },
-      { id: "Predictive Modeling", dependsOn: ["Workday / HRIS"] }
+      { id: "Testing (Jest)", dependsOn: ["React"] },
+      { id: "Git/Version Control", dependsOn: [] },
+      { id: "Docker", dependsOn: [] },
+      { id: "AWS", dependsOn: ["Docker"] }
     ]
   },
   {
@@ -216,7 +193,6 @@ export const mockProfiles = [
     matchPercentage: 58,
     missingSkills: 3,
     weakSkills: 3,
-    userResume: "Data Scientist with experience in building predictive models using Python and SQL. Proficient in PyTorch for deep learning and NLP tasks. Skilled in data visualization and statistical analysis. Working knowledge of Apache Spark for distributed computing.",
     skills: [
       { name: 'Python', requiredLevel: 5, yourLevel: 4, category: 'Core' },
       { name: 'SQL', requiredLevel: 5, yourLevel: 4, category: 'Database' },
