@@ -221,18 +221,22 @@ export default function AuthModal({ isOpen, onClose, onLoginSuccess }) {
                                 {/* Demo Login for Judges */}
                                 <div className="mt-6">
                                     <motion.button
-                                        whileHover={{ scale: 1.02 }}
+                                        whileHover={{ scale: 1.02, y: -2 }}
                                         whileTap={{ scale: 0.98 }}
                                         onClick={() => {
                                             demoLogin();
                                             onClose();
                                         }}
-                                        className="w-full py-4 px-6 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-2xl font-black text-xs uppercase tracking-[0.2em] shadow-xl hover:shadow-indigo-500/20 transition-all border border-slate-700 dark:border-slate-200 flex items-center justify-center gap-3 group"
+                                        className="w-full relative overflow-hidden py-4 px-6 bg-gradient-to-br from-[#b8860b] via-[#daa520] to-[#b8860b] text-slate-900 rounded-2xl font-black text-xs uppercase tracking-[0.2em] shadow-[0_8px_32px_rgba(184,134,11,0.3)] hover:shadow-[0_12px_48px_rgba(184,134,11,0.5)] transition-all border border-amber-400/50 flex items-center justify-center gap-3 group"
                                     >
-                                        <Sparkles className="w-4 h-4 text-amber-400 group-hover:rotate-12 transition-transform" />
-                                        Judge Demo Access
-                                        <Sparkles className="w-4 h-4 text-amber-400 group-hover:-rotate-12 transition-transform" />
+                                        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent -translate-x-full group-hover:animate-[shimmer_2s_infinite]" />
+                                        <Sparkles className="w-4 h-4 text-slate-900 group-hover:rotate-12 transition-transform" />
+                                        <span>Judge Demo Access</span>
+                                        <Sparkles className="w-4 h-4 text-slate-900 group-hover:-rotate-12 transition-transform" />
                                     </motion.button>
+                                    <p className="text-[10px] text-slate-500 dark:text-slate-400 text-center mt-3 font-bold uppercase tracking-widest opacity-60">
+                                        * Instant full experience for hackathon reviewers
+                                    </p>
                                 </div>
 
                                 <div className="mt-8 text-center bg-slate-50 dark:bg-slate-800/50 rounded-2xl p-4 border border-slate-100 dark:border-slate-700/50">
