@@ -14,6 +14,7 @@ const errorHandler = require('./middleware/errorHandler');
 const router = require('./routes/index');
 
 const app = express();
+app.set('trust proxy', 1); // Required for Render/behind proxy to handle cookies/sessions correctly
 const PORT = parseInt(process.env.PORT || '5000', 10);
 
 // ── Ensure uploads directory exists ─────────────────────────────────────────
