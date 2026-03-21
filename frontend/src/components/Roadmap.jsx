@@ -48,7 +48,10 @@ export default function Roadmap({ roadmap, onUpdate, onAssessment, learningStyle
             </div>
           </div>
           <div className="text-sm text-slate-500 dark:text-slate-400">
-            {roadmap.length} steps • {roadmap.reduce((acc, step) => acc + parseInt(step.duration), 0)} weeks estimated
+            {roadmap.length} steps • {roadmap.reduce((acc, step) => {
+              const val = parseInt(step.duration || 0);
+              return acc + (isNaN(val) ? 0 : val);
+            }, 0)} weeks estimated
           </div>
         </div>
       </div>
@@ -127,9 +130,9 @@ export default function Roadmap({ roadmap, onUpdate, onAssessment, learningStyle
                           <Brain className="w-3.5 h-3.5 text-indigo-500 mt-1 flex-shrink-0" />
                           <div>
                             <p className="text-[10px] font-black text-indigo-600 dark:text-indigo-400 uppercase tracking-widest mb-1">Explainable AI Trace</p>
-                            <p className="text-xs text-indigo-800/70 dark:text-indigo-300/70 italic">
-                              {step.reason || (isSkipped ? `System identified proficiency in '${step.title.split(' ').pop()}' from resume context.` : `Prerequisite graph indicates '${step.title}' is the optimal next step for your ${step.priority} priority goals.`)}
-                            </p>
+                             <p className="text-xs text-indigo-800/70 dark:text-indigo-300/70 italic">
+                                {step.reason || (isSkipped ? `System identified proficiency in '${(step.title || 'this module').split(' ').pop()}' from resume context.` : `Prerequisite graph indicates '${step.title || 'this module'}' is the optimal next step for your ${step.priority || 'high'} priority goals.`)}
+                              </p>
                           </div>
                         </div>
                       </div>

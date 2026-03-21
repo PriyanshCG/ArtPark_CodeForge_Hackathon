@@ -196,4 +196,86 @@ const getCoursesByDomain = (req, res) => {
   );
 };
 
-module.exports = { generatePathway, getPathway, getAllCourses, getCoursesByDomain };
+/**
+ * PATCH /api/pathway/:sessionId/assessment
+ * Record the result of a module assessment and inject remedial steps if failed.
+ */
+const recordAssessmentResult = async (req, res, next) => {
+  try {
+    const { sessionId } = req.params;
+    const { moduleId, score, passed } = req.body;
+
+    if (score === undefined || !moduleId) {
+      return sendError(res, 'moduleId and score are required', 400);
+    }
+
+    const session = await Session.findOne({ sessionId });
+    if (!session) return sendError(res, 'Session not found', 404);
+
+    // If pathway is just a reference, we might need to load it from the LearningPathway model
+    let pathwayData = session.pathway;
+    let learningPathwayDoc = null;
+
+    if (pathwayData && pathwayData.id) {
+       learningPathwayDoc = await LearningPathway.findById(pathwayData.id);
+       if (!learningPathwayDoc) return sendError(res, 'Learning Pathway not found', 404);
+       pathwayData = learningPathwayDoc.pathway;
+    }
+
+    if (!Array.isArray(pathwayData)) {
+       return sendError(res, 'Pathway not found or not an array', 404);
+    }
+
+    // Update the specific module's status in the pathway
+    const moduleIndex = pathwayData.findIndex(step => step.course_id === moduleId);
+    if (moduleIndex === -1) return sendError(res, 'Module not found in pathway', 404);
+
+    pathwayData[moduleIndex].assessmentScore = score;
+    pathwayData[moduleIndex].status = passed ? 'completed' : 'failed';
+
+    // If failed, inject remedial step RIGHT AFTER this module
+    let remedialInjected = false;
+    if (!passed) {
+      const failedModule = pathwayData[moduleIndex];
+      const remedialStep = {
+        course_id: `remedial-${moduleId}-${Date.now()}`,
+        course_title: `Remedial: ${failedModule.course_title} Fundamentals`,
+        type: 'remedial',
+        status: 'unlocked',
+        priority: 'critical',
+        estimated_hours: 4,
+        learning_tips: `Targeted remedial content for ${failedModule.course_title}. Focus on foundational concepts before re-attempting the assessment.`,
+        prerequisites_ids: [moduleId],
+        injectedAt: new Date(),
+        triggerScore: score,
+        domain: failedModule.domain,
+        proficiency_target: failedModule.proficiency_target
+      };
+      // Inject the remedial step at moduleIndex + 1
+      pathwayData.splice(moduleIndex + 1, 0, remedialStep);
+      remedialInjected = true;
+    }
+
+    if (learningPathwayDoc) {
+      learningPathwayDoc.pathway = pathwayData;
+      learningPathwayDoc.markModified('pathway');
+      await learningPathwayDoc.save();
+    } else {
+      session.pathway = pathwayData;
+      session.markModified('pathway');
+      await session.save();
+    }
+
+    res.json({
+      success: true,
+      passed,
+      updatedPathway: pathwayData,
+      remedialInjected
+    });
+  } catch (err) {
+    logger.error('Assessment recording error:', err);
+    next(err);
+  }
+};
+
+module.exports = { generatePathway, getPathway, getAllCourses, getCoursesByDomain, recordAssessmentResult };

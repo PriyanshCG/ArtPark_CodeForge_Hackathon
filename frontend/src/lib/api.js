@@ -47,17 +47,31 @@ export const uploadDocuments = async (resumeFile, jobDescriptionText, jobDescrip
   return result.data;
 };
 
-export const runAnalysis = async (sessionId) => {
+export const runAnalysis = async (sessionId, learningStyle) => {
   return apiFetch('/analysis/run', {
     method: 'POST',
-    body: JSON.stringify({ sessionId }),
+    body: JSON.stringify({ sessionId, learningStyle }),
   });
 };
 
-export const generatePathway = async (sessionId) => {
+export const generatePathway = async (sessionId, learningStyle) => {
   return apiFetch('/analysis/roadmap/generate', {
     method: 'POST',
-    body: JSON.stringify({ sessionId }),
+    body: JSON.stringify({ sessionId, learningStyle }),
+  });
+};
+
+export const optimizeResume = async (data) => {
+  return apiFetch('/resume/optimize', {
+    method: 'POST',
+    body: JSON.stringify(data),
+  });
+};
+
+export const recordAssessmentResult = async (sessionId, moduleId, score, passed) => {
+  return apiFetch(`/pathway/${sessionId}/assessment`, {
+    method: 'PATCH',
+    body: JSON.stringify({ moduleId, score, passed }),
   });
 };
 

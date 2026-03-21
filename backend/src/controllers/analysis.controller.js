@@ -42,10 +42,11 @@ const runFullAnalysis = async (req, res, next) => {
   try {
     const resumeText = session.resumeProfile?._rawText;
     const jdText = session.jdProfile?._rawText || session.jdText;
+    const learningStyle = req.body.learningStyle || 'Practical';
     const resumeProfile = await parseResume(resumeText);
     const jdProfile = await parseJobDescription(jdText);
     const skillGap = await analyzeSkillGap(resumeProfile, jdProfile);
-    const roadmap = await generateAdaptivePathway(resumeProfile, jdProfile, skillGap);
+    const roadmap = await generateAdaptivePathway(resumeProfile, jdProfile, skillGap, learningStyle);
 
     session.resumeProfile = resumeProfile;
     session.jdProfile = jdProfile;

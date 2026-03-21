@@ -147,13 +147,18 @@ export default function App() {
 
     // Map backend data to frontend state
     const mappedData = {
+      sessionId: finalResult.sessionId,
       role: finalResult.jdProfile?.role_title || "Target Role",
       company: finalResult.jdProfile?.company_name || "Target Company",
       readinessScore: finalResult.skillGap?.overall_readiness_score || 0,
       matchPercentage: finalResult.skillGap?.overall_readiness_score || 0,
       missingSkills: (finalResult.skillGap?.missing_skills || []).length,
       weakSkills: (finalResult.skillGap?.proficiency_gaps || []).length,
+      missingSkillsList: (finalResult.skillGap?.missing_skills || []),
+      currentSkills: (finalResult.skillGap?.matched_skills || []).map(s => s.skill),
       skills: allSkills,
+      resumeText: finalResult.resumeProfile?._rawText,
+      jobDescription: finalResult.jdProfile?._rawText,
       reasoning: (finalResult.skillGap?.missing_skills || []).map(s => ({
         skill: s.skill,
         reason: `Required for the role but not found in your profile. Priority: ${s.priority}.`,
@@ -163,15 +168,18 @@ export default function App() {
         reason: `Proficiency gap detected. Role requires ${s.required_level}, you have ${s.current_level}.`,
         type: 'weak'
       }))),
-      roadmap: (finalResult.pathway || []).map(step => ({
-        step: step.sequence,
-        title: step.course_title,
-        description: step.learning_tips,
-        duration: `${step.estimated_hours}h`,
-        priority: step.priority,
-        status: 'todo',
-        reason: step.reasoning?.why_included
+      roadmap: (finalResult.pathway || finalResult.roadmap || []).map(step => ({
+        course_id: step.course_id || step.id,
+        step: step.sequence || step.step,
+        title: step.course_title || step.title || 'Unknown Module',
+        description: step.learning_tips || step.description || 'No description available.',
+        duration: step.estimated_hours ? `${Math.ceil(step.estimated_hours / 10)}` : (step.duration || '0'),
+        priority: step.priority || 'medium',
+        status: step.status || 'todo',
+        reason: step.reasoning?.why_included || step.reason || 'Included based on skill gap analysis.',
+        prerequisites_ids: step.prerequisites_ids || []
       })),
+      skillGraph: finalResult.graphData,
       coachingNote: finalResult.coachingNote,
       targetJob: finalResult.jdProfile?.role_title
     };
@@ -188,42 +196,26 @@ export default function App() {
     });
   };
 
-  const handleAssessment = (step, passed) => {
-    setCurrentData(prev => {
-      const index = prev.roadmap.findIndex(s => s.title === step.title);
-      if (index === -1) return prev;
-      const newRoadmap = [...prev.roadmap];
-
-      if (passed) {
-        newRoadmap[index] = {
-          ...newRoadmap[index],
-          status: 'completed',
-          reason: `Assessment passed with score ≥70%. Verified mastery of ${step.title}.`
-        };
-        // Adaptively skip the next step
-        if (newRoadmap[index + 1]) {
-          newRoadmap[index + 1] = {
-            ...newRoadmap[index + 1],
-            status: 'skipped',
-            reason: `Skipped because user demonstrated advanced knowledge in prerequisite assessment.`
-          };
-        }
-      } else {
-        // Inject a remedial step before the current one
-        const remedialStep = {
-          step: '!',
-          title: `Remedial: ${step.title} Fundamentals`,
-          description: `Extra focus on core concepts to bridge the gap identified in the assessment.`,
-          duration: '1 week',
-          priority: 'high',
-          status: 'todo',
-          reason: 'Injected by Adaptive Engine due to assessment performance below 70% threshold.'
-        };
-        newRoadmap.splice(index, 0, remedialStep);
+  const handleAssessment = async (step, passed) => {
+    if (!currentData?.sessionId) return;
+    
+    try {
+      const response = await api.recordAssessmentResult(
+        currentData.sessionId, 
+        step.course_id, 
+        passed ? 85 : 40, // Mock score for now until SkillQuiz is expanded
+        passed
+      );
+      
+      if (response.success) {
+        setCurrentData(prev => ({
+          ...prev,
+          roadmap: response.updatedPathway
+        }));
       }
-
-      return { ...prev, roadmap: newRoadmap };
-    });
+    } catch (err) {
+      console.error('Failed to record assessment:', err);
+    }
   };
 
   const handleSignIn = () => {
@@ -448,7 +440,10 @@ export default function App() {
                       const progress = roadmap.length > 0 ? (completedCount / roadmap.length) * 100 : 0;
 
                       const remainingSteps = roadmap.filter(s => s.status === 'todo');
-                      const totalWeeks = remainingSteps.reduce((acc, s) => acc + parseInt(s.duration || 0), 0);
+                      const totalWeeks = remainingSteps.reduce((acc, s) => {
+                        const val = parseInt(s.duration || 0);
+                        return acc + (isNaN(val) ? 0 : val);
+                      }, 0);
                       const displayTime = totalWeeks > 0 ? `${totalWeeks} Weeks` : 'Ready!';
 
                       const skills = currentData.skills || [];
@@ -482,9 +477,13 @@ export default function App() {
                         skills={currentData.skills}
                         role={currentData.targetJob || currentData.role}
                       />
-                      <ResumeOptimizer
-                        missingSkills={currentData.missingSkills}
-                        role={currentData.targetJob || currentData.role}
+                        <ResumeOptimizer
+                          resumeText={currentData.resumeText}
+                          jobDescription={currentData.jobDescription}
+                          missingSkills={currentData.missingSkillsList}
+                          currentSkills={currentData.currentSkills}
+                        targetRole={currentData.role}
+                        seniority="Mid" // Or currentData.seniority
                       />
                     </div>
                     <Roadmap

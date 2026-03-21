@@ -93,10 +93,12 @@ export default function UploadForm({
       // Step 5: Finalize
       setStatus('Finalizing report...');
       const finalResult = {
+        sessionId: resumeResult.sessionId,
         resumeProfile,
         jdProfile,
         skillGap,
         pathway: roadmap.pathway,
+        graphData: roadmap.graphData,
         roadmapMetrics: roadmap.metrics,
         coachingNote: roadmap.overall_coaching_note
       };
@@ -134,31 +136,31 @@ export default function UploadForm({
       ],
       roadmap: [
         {
-          sequence: 1,
-          course_title: 'TypeScript Masterclass',
-          skill_name: 'TypeScript',
-          estimated_hours: 12,
+          step: 1,
+          title: 'TypeScript Masterclass',
+          description: 'Master advanced TypeScript patterns, generics, and type-safe React development.',
+          duration: '2 weeks',
           priority: 'high',
           learning_tips: 'Focus on generics and advanced type guards.',
-          reasoning: { why_included: 'JD requires expert level (5/5), but resume shows basic familiarity.' }
+          reason: 'JD requires expert level (5/5), but resume shows basic familiarity.'
         },
         {
-          sequence: 2,
-          course_title: 'Docker & Kubernetes Foundations',
-          skill_name: 'Docker',
-          estimated_hours: 15,
+          step: 2,
+          title: 'Docker & Kubernetes Foundations',
+          description: 'Learn containerization basics and orchestration for modern cloud deployments.',
+          duration: '3 weeks',
           priority: 'medium',
           learning_tips: 'Build a multi-stage container for a React app.',
-          reasoning: { why_included: 'Missing core infrastructure skill needed for deployment.' }
+          reason: 'Missing core infrastructure skill needed for deployment.'
         },
         {
-          sequence: 3,
-          course_title: 'GraphQL API Design',
-          skill_name: 'GraphQL',
-          estimated_hours: 10,
+          step: 3,
+          title: 'GraphQL API Design',
+          description: 'Understand schema-first development, queries, mutations, and Apollo integration.',
+          duration: '2 weeks',
           priority: 'low',
           learning_tips: 'Practice schema-first development with Apollo.',
-          reasoning: { why_included: 'Nice-to-have skill for modernizing the service layer.' }
+          reason: 'Nice-to-have skill for modernizing the service layer.'
         }
       ],
       reasoning: [

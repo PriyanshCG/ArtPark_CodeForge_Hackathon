@@ -10,6 +10,7 @@ const {
   analyzeSkillGapHandler,
   generateRoadmapHandler
 } = require('../controllers/analysis.controller');
+const { uploadBoth } = require('../middleware/uploadMiddleware');
 
 const router = express.Router();
 
@@ -20,10 +21,10 @@ router.post('/run', runFullAnalysis);
 router.get('/:sessionId', getAnalysisStatus);
 
 /** POST /api/analysis/parse/resume */
-router.post('/parse/resume', parseResumeHandler);
+router.post('/parse/resume', uploadBoth, parseResumeHandler);
 
 /** POST /api/analysis/parse/jd */
-router.post('/parse/jd', parseJDHandler);
+router.post('/parse/jd', uploadBoth, parseJDHandler);
 
 /** POST /api/analysis/analyze/skill-gap */
 router.post('/analyze/skill-gap', analyzeSkillGapHandler);

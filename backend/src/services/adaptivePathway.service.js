@@ -409,6 +409,49 @@ const generateReasoningTrace = (pathwaySteps, graph, jdProfile, resumeProfile) =
   });
 };
 
+/**
+ * Converts the calculated pathway into a graph structure for React Flow.
+ * @param {object[]} pathway 
+ * @returns {object} { nodes, edges }
+ */
+function convertPathwayToGraphData(pathway) {
+  const nodes = pathway.map((step, index) => ({
+    id: step.course_id || `node-${index}`,
+    type: 'custom',
+    position: {
+      x: (index % 4) * 250,
+      y: Math.floor(index / 4) * 180
+    },
+    data: {
+      label: step.course_title,
+      category: step.domain,
+      difficulty: step.proficiency_target,
+      duration: step.estimated_hours,
+      status: step.status || 'locked',
+      reasoningTrace: step.reasoning
+    }
+  }));
+
+  const edges = [];
+  pathway.forEach((step) => {
+    const prereqs = step.prerequisites_ids || [];
+    if (prereqs.length > 0) {
+      prereqs.forEach((prereqId) => {
+        edges.push({
+          id: `edge-${prereqId}-${step.course_id}`,
+          source: prereqId,
+          target: step.course_id,
+          type: 'smoothstep',
+          animated: step.status === 'current',
+          style: { stroke: step.status === 'completed' ? '#10b981' : '#6366f1' }
+        });
+      });
+    }
+  });
+
+  return { nodes, edges };
+}
+
 // ── MAIN EXPORT: generateAdaptivePathway ─────────────────────────────────────
 
 /**
@@ -554,8 +597,11 @@ const generateAdaptivePathway = async (resumeProfile, jdProfile, skillGap, learn
 
   logger.info(`✅ Pathway generation complete. ${finalPathway.length} steps, ~${totalHours}h total.`);
 
+  const graphData = convertPathwayToGraphData(finalPathway);
+
   return {
     pathway: finalPathway,
+    graphData,
     metrics,
     weekly_schedule: enrichment.weekly_schedule || {},
     overall_coaching_note: enrichment.overall_coaching_note || '',

@@ -7,6 +7,7 @@ const {
   getPathway,
   getAllCourses,
   getCoursesByDomain,
+  recordAssessmentResult
 } = require('../controllers/pathway.controller');
 
 const router = express.Router();
@@ -16,6 +17,9 @@ router.post('/generate', generatePathway);
 
 /** GET /api/pathway/:sessionId */
 router.get('/:sessionId', getPathway);
+
+/** PATCH /api/pathway/:sessionId/assessment */
+router.patch('/:sessionId/assessment', recordAssessmentResult);
 
 module.exports = router;
 

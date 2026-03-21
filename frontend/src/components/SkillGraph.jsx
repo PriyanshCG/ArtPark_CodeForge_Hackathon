@@ -387,11 +387,30 @@ const SkillGraph = ({ skills, graphData }) => {
   // Re-build nodes when graphData, skills, OR theme changes
   useEffect(() => {
     if (!graphData || !skills || skills.length === 0) return;
+    
+    // If backend already provided nodes and edges (Fix 3), use them
+    if (graphData.nodes && graphData.edges) {
+      const themedNodes = graphData.nodes.map(n => ({
+        ...n,
+        type: 'skillNode',
+        data: { 
+          ...n.data, 
+          skill: skills.find(s => s.name === n.data.label) || { name: n.data.label, yourLevel: 1, requiredLevel: 3 },
+          graphTheme 
+        }
+      }));
+      setNodes(themedNodes);
+      setEdges(graphData.edges);
+      setIsReady(true);
+      return;
+    }
+
+    // Fallback for legacy format or missing data
     try {
       const skillLookup = Object.fromEntries(skills.map(s => [s.name.toLowerCase(), s]));
 
-      const rawNodes = graphData.map(node => {
-        const skill = skillLookup[node.id.toLowerCase()] || { name: node.id, requiredLevel: 0, yourLevel: 0 };
+      const rawNodes = (Array.isArray(graphData) ? graphData : []).map(node => {
+        const skill = skillLookup[node.id?.toLowerCase()] || { name: node.id, requiredLevel: 0, yourLevel: 0 };
         const status = getGapStatus(skill);
         return {
           id: node.id,
@@ -401,8 +420,8 @@ const SkillGraph = ({ skills, graphData }) => {
         };
       });
 
-      const rawEdges = graphData.flatMap(node =>
-        node.dependsOn.map(depId => ({
+      const rawEdges = (Array.isArray(graphData) ? graphData : []).flatMap(node =>
+        (node.dependsOn || []).map(depId => ({
           id: `e-${depId}-${node.id}`,
           source: depId,
           target: node.id,
@@ -412,10 +431,12 @@ const SkillGraph = ({ skills, graphData }) => {
         }))
       );
 
-      const { nodes: ln, edges: le } = getLayoutedElements(rawNodes, rawEdges);
-      setNodes(ln);
-      setEdges(le);
-      setIsReady(true);
+      if (rawNodes.length > 0) {
+        const { nodes: ln, edges: le } = getLayoutedElements(rawNodes, rawEdges);
+        setNodes(ln);
+        setEdges(le);
+        setIsReady(true);
+      }
     } catch (err) {
       console.error('Layout failed:', err);
     }

@@ -11,6 +11,7 @@ const pathwayRouter = require('./pathway.routes');
 const authRouter = require('./auth.routes');
 const chatRouter = require('./chat.routes');
 const interviewRouter = require('./interview.routes');
+const resumeOptimizerRouter = require('./resumeOptimizer.routes');
 
 const router = express.Router();
 
@@ -20,6 +21,7 @@ router.use('/pathway', pathwayRouter);
 router.use('/auth', authRouter);
 router.use('/chat', chatRouter);
 router.use('/interview', interviewRouter);
+router.use('/resume', resumeOptimizerRouter);
 
 /** GET /api/courses */
 router.get('/courses', getAllCourses);
