@@ -41,7 +41,6 @@ function ProtectedRoute({ children }) {
 
   return children;
 }
-
 // Skeleton Loader Component
 function SkeletonLoader() {
   return (
@@ -581,23 +580,9 @@ export default function App() {
       <Routes>
         <Route path="/" element={<LandingPage darkMode={darkMode} toggleDark={toggleDarkMode} />} />
         <Route path="/auth/callback" element={<AuthCallback />} />
-        <Route 
-          path="/dashboard" 
-          element={
-            <ProtectedRoute>
-              {appLayout}
-            </ProtectedRoute>
-          } 
-        />
-        <Route 
-          path="/upload" 
-          element={
-            <ProtectedRoute>
-              {appLayout}
-            </ProtectedRoute>
-          } 
-        />
-        <Route path="*" element={<Navigate to="/" replace />} />
+        <Route path="/dashboard" element={<ProtectedRoute>{appLayout}</ProtectedRoute>} />
+        <Route path="/upload" element={<ProtectedRoute>{appLayout}</ProtectedRoute>} />
+        <Route path="*" element={appLayout} />
       </Routes>
     </BrowserRouter>
   );
