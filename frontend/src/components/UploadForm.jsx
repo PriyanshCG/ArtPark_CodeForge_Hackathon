@@ -168,7 +168,20 @@ export default function UploadForm({
         { skill: 'Docker', reason: 'Critical for local development environments.', type: 'weak' },
         { skill: 'GraphQL', reason: 'Skill not found on resume. Recommended as a growth area.', type: 'missing' }
       ],
-      targetJob: 'Full Stack Developer'
+      targetJob: 'Full Stack Developer',
+      skillGraph: [
+        { id: "JavaScript", dependsOn: [] },
+        { id: "React", dependsOn: ["JavaScript"] },
+        { id: "Node.js", dependsOn: ["JavaScript"] },
+        { id: "MongoDB", dependsOn: ["Node.js"] },
+        { id: "Docker", dependsOn: ["Node.js"] },
+        { id: "GraphQL", dependsOn: ["Node.js"] },
+        { id: "TypeScript", dependsOn: ["JavaScript"] }
+      ],
+      resumeText: "Experienced software engineer with 5 years building scalable web applications. Strong React and Node.js skills.",
+      jobDescription: "Looking for a seasoned Full Stack Developer with expertise in React, Node.js, TypeScript, and Docker.",
+      missingSkillsList: ['GraphQL', 'Docker'],
+      currentSkills: ['React', 'Node.js', 'MongoDB', 'JavaScript']
     };
     onAnalyze(demoData);
   };

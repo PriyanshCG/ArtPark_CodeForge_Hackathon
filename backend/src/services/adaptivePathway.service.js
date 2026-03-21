@@ -482,7 +482,7 @@ function convertPathwayToGraphData(pathway, allSkillsInTree, resumeProfile, grap
           target: skillName,
           animated: false,
           style: { stroke: '#4A4A4A', strokeWidth: 1.5 },
-          markerEnd: { type: MarkerType.ArrowClosed, color: '#4A4A4A' }
+          markerEnd: { type: 'arrowclosed', color: '#4A4A4A' }
         });
       }
     });

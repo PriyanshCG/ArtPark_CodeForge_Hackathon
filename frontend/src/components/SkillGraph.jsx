@@ -392,7 +392,10 @@ const SkillGraph = ({ skills, graphData }) => {
 
   // Re-build nodes when graphData, skills, OR theme changes
   useEffect(() => {
-    if (!graphData || !skills || skills.length === 0) return;
+    if (!graphData || !skills || skills.length === 0) {
+      setIsReady(true);
+      return;
+    }
     
     // If backend already provided nodes and edges (Fix 3), use them but RE-LAYOUT for consistency
     if (graphData.nodes && graphData.edges) {
@@ -638,7 +641,7 @@ const SkillGraph = ({ skills, graphData }) => {
           minHeight: '500px',
         }}
       >
-        {!isReady || nodes.length === 0 ? (
+        {!isReady ? (
           <div className="absolute inset-0 flex flex-col items-center justify-center gap-4">
             <div
               className="w-10 h-10 rounded-full border-4 animate-spin"
@@ -646,6 +649,12 @@ const SkillGraph = ({ skills, graphData }) => {
             />
             <p className="text-sm font-medium" style={{ color: t.spinnerText }}>
               Calculating spatial layout…
+            </p>
+          </div>
+        ) : nodes.length === 0 ? (
+          <div className="absolute inset-0 flex flex-col items-center justify-center gap-4">
+            <p className="text-sm font-medium" style={{ color: t.spinnerText }}>
+              No dependency graph available for this profile.
             </p>
           </div>
         ) : (

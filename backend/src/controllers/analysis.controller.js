@@ -5,6 +5,7 @@ const { analyzeSkillGap } = require('../services/skillMatcher.service');
 const { generateAdaptivePathway } = require('../services/adaptivePathway.service');
 const { sendSuccess, sendError } = require('../utils/responseFormatter');
 const logger = require('../utils/logger');
+const Session = require('../models/Session.model');
 
 /**
  * Helper to extract text from buffer (PDF or Text)

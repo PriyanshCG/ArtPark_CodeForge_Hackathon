@@ -230,6 +230,35 @@ function getMockResponse(prompt, isStructured) {
     };
   }
 
+  // --- MOCK RESUME OPTIMIZER ---
+  if (text.includes('deep, surgical resume optimization')) {
+    return {
+      optimizedScore: 85,
+      scoreBreakdown: {
+        atsMatch: 25,
+        keywordDensity: 15,
+        impactLanguage: 22,
+        structure: 23
+      },
+      rewrittenBullets: [
+        {
+          original: "Worked on frontend",
+          rewritten: "Engineered responsive frontend architecture using React and Tailwind CSS, improving load times by 40% for 10k+ daily users",
+          reason: "Added metrics and specific technologies"
+        }
+      ],
+      skillInjections: [
+        {
+          skill: "Docker",
+          suggestedSection: "Technical Skills",
+          context: "Add under DevOps section"
+        }
+      ],
+      atsKeywordGaps: ["CI/CD", "AWS", "Agile"],
+      overallSuggestion: "Your resume is strong but lacks infrastructure-related keywords. Consider adding specific projects where you utilized DevOps practices."
+    };
+  }
+
   // --- MOCK ENRICHMENT / OTHER ---
   return {
     enriched_steps: [],

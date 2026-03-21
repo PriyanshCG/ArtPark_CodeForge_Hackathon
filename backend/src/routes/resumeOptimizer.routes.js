@@ -7,6 +7,6 @@ const { optimizeResume } = require('../controllers/resumeOptimizer.controller');
  * POST /api/resume/optimize
  * Perform surgical AI resume optimization.
  */
-router.post('/optimize', verifyToken, optimizeResume);
+router.post('/optimize', optimizeResume);
 
 module.exports = router;
